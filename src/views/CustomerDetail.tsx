@@ -103,6 +103,15 @@ export const CustomerDetail: React.FC = () => {
           <button className="btn btn-primary btn-sm" onClick={() => navigate(`/analysis/${customer.id}`)}>
             📊 Analyse starten
           </button>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/consultation/${customer.id}`)}>
+            📝 Daten erfassen
+          </button>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/property-insurance/${customer.id}`)}>
+            🏡 Eigentumsabfrage
+          </button>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/documentation/${customer.id}`)}>
+            📋 Protokoll
+          </button>
           <button className="btn btn-secondary btn-sm" onClick={() => setEditMode(!editMode)}>
             {editMode ? '✕ Abbrechen' : '✏️ Bearbeiten'}
           </button>

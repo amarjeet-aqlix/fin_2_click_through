@@ -10,6 +10,12 @@ import { CustomerPortal } from './views/CustomerPortal';
 import { CustomerDataForm } from './views/CustomerDataForm';
 import { ConsultationDoc } from './views/ConsultationDoc';
 import { FirstLogin } from './views/FirstLogin';
+import { LegalInformation } from './views/LegalInformation';
+import { InitialLegalInformation } from './views/InitialLegalInformation';
+import { DisabledCustomerDashboard } from './views/DisabledCustomerDashboard';
+import { PropertyInsuranceSelection } from './views/PropertyInsuranceSelection';
+import { PropertyInsuranceSelectionOptional } from './views/PropertyInsuranceSelectionOptional';
+import { PrecautionDetail } from './views/PrecautionDetail';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: string[] }> = ({ children, allowedRoles }) => {
   const { user } = useApp();
@@ -86,6 +92,42 @@ const AppRoutes: React.FC = () => (
     <Route path="/first-login" element={
       <ProtectedRoute>
         <FirstLogin />
+      </ProtectedRoute>
+    } />
+
+    <Route path="/initial-legal" element={
+      <ProtectedRoute>
+        <InitialLegalInformation />
+      </ProtectedRoute>
+    } />
+
+    <Route path="/legal" element={
+      <ProtectedRoute>
+        <LegalInformation />
+      </ProtectedRoute>
+    } />
+
+    <Route path="/disabled" element={
+      <ProtectedRoute allowedRoles={['customer']}>
+        <DisabledCustomerDashboard />
+      </ProtectedRoute>
+    } />
+
+    <Route path="/property-insurance/:id" element={
+      <ProtectedRoute allowedRoles={['admin', 'consultant']}>
+        <PropertyInsuranceSelection />
+      </ProtectedRoute>
+    } />
+
+    <Route path="/property-insurance/:id/optional" element={
+      <ProtectedRoute allowedRoles={['admin', 'consultant']}>
+        <PropertyInsuranceSelectionOptional />
+      </ProtectedRoute>
+    } />
+
+    <Route path="/analysis/:id/precaution/:type" element={
+      <ProtectedRoute allowedRoles={['admin', 'consultant']}>
+        <PrecautionDetail />
       </ProtectedRoute>
     } />
 

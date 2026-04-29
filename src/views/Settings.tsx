@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '../components/Layout';
 import { Panel, Input, Select, Textarea, Toggle, Alert, Badge, StatusBadge, SectionHeader, ColorInput, FileUpload, EmptyState, Confirm } from '../components/UI';
 import { useApp } from '../context';
@@ -12,11 +12,13 @@ const SETTINGS_TABS = [
   { id: 'consultation', label: 'Beratung', icon: '💬' },
   { id: 'admin', label: 'Verwaltung', icon: '👥' },
   { id: 'billing', label: 'Abrechnung', icon: '💳' },
+  { id: 'legal', label: 'Rechtliches', icon: '⚖️' },
 ];
 
 export const Settings: React.FC = () => {
   const { user, addToast } = useApp();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const initialTab = searchParams.get('tab') ?? 'profile';
   const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -488,6 +490,73 @@ export const Settings: React.FC = () => {
                     </tbody>
                   </table>
                 )}
+              </Panel>
+            </div>
+          )}
+
+          {/* ── Rechtliches ──────────────────────────────────────── */}
+          {activeTab === 'legal' && (
+            <div style={{ display: 'grid', gap: 'var(--sp-l)' }}>
+              <SectionHeader title="Rechtliche Informationen" />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--sp-m)' }}>
+                {[
+                  { icon: '📋', title: 'AGB', desc: 'Allgemeine Geschäftsbedingungen — Nutzungsregeln und Vertragsgrundlagen.', tab: 'agb' },
+                  { icon: '🔒', title: 'Datenschutzerklärung', desc: 'DSGVO-konforme Erklärung zur Verarbeitung personenbezogener Daten.', tab: 'datenschutz' },
+                  { icon: '🏢', title: 'Impressum', desc: 'Gesetzliche Pflichtangaben gemäß § 5 TMG.', tab: 'impressum' },
+                ].map((doc) => (
+                  <div key={doc.tab} className="card">
+                    <div className="card-body" style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 36, marginBottom: 'var(--sp-s)' }}>{doc.icon}</div>
+                      <div className="font-bold" style={{ marginBottom: 6 }}>{doc.title}</div>
+                      <div className="text-xs text-grey" style={{ marginBottom: 'var(--sp-m)', lineHeight: 1.5 }}>{doc.desc}</div>
+                      <button className="btn btn-secondary btn-sm btn-full" onClick={() => navigate('/legal')}>
+                        Öffnen →
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Panel title="Pflichtdokumentation">
+                <Alert type="info">
+                  Als zugelassener Versicherungsmakler (§ 34d GewO) sind Sie verpflichtet, Kunden vor jeder Beratung die IDD-Erstinformation sowie das Beratungsprotokoll auszuhändigen.
+                </Alert>
+                <div style={{ display: 'grid', gap: 'var(--sp-m)', marginTop: 'var(--sp-m)' }}>
+                  {[
+                    { label: 'IDD-Erstinformation bereitstellen', desc: 'Vor jedem Erstgespräch verpflichtend (EU-Richtlinie 2016/97)', status: 'ok' },
+                    { label: 'Beratungsprotokoll erstellen', desc: 'Nach jedem Beratungsgespräch (§ 18 VersVermV)', status: 'ok' },
+                    { label: 'Wechselgründe dokumentieren', desc: 'Bei Ablösung bestehender Verträge', status: 'ok' },
+                    { label: 'Datenschutzerklärung einholen', desc: 'Einwilligung zur Datenverarbeitung', status: 'warning' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-m text-sm" style={{ padding: 'var(--sp-s) 0', borderBottom: '1px solid var(--gray-light)' }}>
+                      <span style={{ color: item.status === 'ok' ? 'var(--color-green)' : 'var(--color-orange)', fontSize: 18, flexShrink: 0 }}>
+                        {item.status === 'ok' ? '✓' : '⚠'}
+                      </span>
+                      <div>
+                        <div className="font-bold">{item.label}</div>
+                        <div className="text-xs text-grey">{item.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+
+              <Panel title="Versionsverlauf">
+                <div style={{ display: 'grid', gap: 8 }}>
+                  {[
+                    { date: 'April 2026', label: 'AGB v3.2 — Aktualisierung gemäß neuem VersVermV', current: true },
+                    { date: 'Januar 2025', label: 'Datenschutzerklärung v2.1 — DSGVO-Anpassung', current: false },
+                    { date: 'Oktober 2024', label: 'AGB v3.1 — Klarstellung Vergütungsartikel', current: false },
+                    { date: 'Mai 2024', label: 'IDD-Vorlage v1.3 — Aktualisierung Beschwerdeverfahren', current: false },
+                  ].map((v, i) => (
+                    <div key={i} className="flex items-center gap-m text-sm" style={{ padding: '6px 0', borderBottom: '1px solid var(--gray-light)' }}>
+                      <span className="text-grey" style={{ minWidth: 90, fontSize: 'var(--fs-xs)' }}>{v.date}</span>
+                      <span style={{ flex: 1 }}>{v.label}</span>
+                      {v.current && <Badge type="success">Aktuell</Badge>}
+                    </div>
+                  ))}
+                </div>
               </Panel>
             </div>
           )}

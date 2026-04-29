@@ -230,9 +230,12 @@ export const Progress: React.FC<{ value: number; max?: number; type?: 'primary' 
 };
 
 // ── Section header ───────────────────────────────────────────
-export const SectionHeader: React.FC<{ title: string; action?: React.ReactNode }> = ({ title, action }) => (
+export const SectionHeader: React.FC<{ title: string; subtitle?: string; action?: React.ReactNode }> = ({ title, subtitle, action }) => (
   <div className="section-header">
-    <h2 className="section-title">{title}</h2>
+    <div>
+      <h2 className="section-title" style={{ marginBottom: subtitle ? 2 : 0 }}>{title}</h2>
+      {subtitle && <div className="text-xs text-grey">{subtitle}</div>}
+    </div>
     {action}
   </div>
 );

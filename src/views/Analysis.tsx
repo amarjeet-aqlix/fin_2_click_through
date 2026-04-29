@@ -65,6 +65,8 @@ const TABS = [
   { id: 'insurances', label: 'Versicherungen', icon: '🛡️' },
   { id: 'house', label: 'Immobilien', icon: '🏠' },
   { id: 'decease', label: 'Todesfall', icon: '🌿' },
+  { id: 'tariff', label: 'Tariffvergleich', icon: '⚖️' },
+  { id: 'missing', label: 'Fehlende Felder', icon: '⚠️' },
   { id: 'idd', label: 'IDD-Formular', icon: '📄' },
   { id: 'download', label: 'Download', icon: '⬇️' },
 ];
@@ -513,7 +515,12 @@ export const Analysis: React.FC = () => {
                           <td className="text-sm">{fmtCur(ins.monthly_premium)}</td>
                           <td className="text-sm">{fmtCur(ins.coverage)}</td>
                           <td><Badge type={ins.status === 'active' ? 'success' : 'neutral'}>{ins.status === 'active' ? 'Aktiv' : 'Inaktiv'}</Badge></td>
-                          <td><button className="btn btn-secondary btn-sm" onClick={() => addToast('info', 'Wird bearbeitet...')}>✏️</button></td>
+                          <td>
+                            <div className="flex gap-s">
+                              <button className="btn btn-secondary btn-sm" onClick={() => addToast('info', 'Wird bearbeitet...')}>✏️</button>
+                              <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/analysis/${customer?.id}/precaution/${ins.type.toLowerCase()}`)}>Detail →</button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -752,6 +759,231 @@ export const Analysis: React.FC = () => {
                   <button className="btn btn-primary btn-sm mt-m" onClick={() => addToast('info', 'Tarifvergleich wird geladen...')}>Angebote vergleichen →</button>
                 </Panel>
               </div>
+            </div>
+          )}
+
+          {/* ── Tariffvergleich ───────────────────────────────── */}
+          {activeTab === 'tariff' && (
+            <div style={{ display: 'grid', gap: 'var(--sp-l)' }}>
+              <SectionHeader title="Tariffvergleich" subtitle="Marktvergleich nach Vorsorgebereich" />
+
+              <Alert type="info">
+                Wählen Sie eine Vorsorge-Kategorie um aktuelle Marktangebote zu vergleichen. Klicken Sie auf „Detail" für eine vollständige Analyse inkl. Qualitätscheckliste.
+              </Alert>
+
+              {/* Category selector */}
+              {[
+                {
+                  type: 'bu', icon: '💼', label: 'Berufsunfähigkeit', status: 'covered',
+                  tariffs: [
+                    { provider: 'Allianz', product: 'BU Premium', premium: '89 €/Mon.', rating: 5, highlight: true },
+                    { provider: 'Swiss Life', product: 'SLR BU Protect', premium: '92 €/Mon.', rating: 5 },
+                    { provider: 'Nürnberger', product: 'BU Invest', premium: '82 €/Mon.', rating: 4 },
+                  ],
+                },
+                {
+                  type: 'leben', icon: '💙', label: 'Risikoleben', status: 'gap',
+                  tariffs: [
+                    { provider: 'Hannoversche', product: 'Risikolife Plus', premium: '35 €/Mon.', rating: 5, highlight: true },
+                    { provider: 'HUK-Coburg', product: 'RLV Premium', premium: '38 €/Mon.', rating: 5 },
+                    { provider: 'Cosmos Direkt', product: 'Risiko direkt', premium: '32 €/Mon.', rating: 4 },
+                  ],
+                },
+                {
+                  type: 'haftpflicht', icon: '🛡️', label: 'Haftpflicht', status: 'covered',
+                  tariffs: [
+                    { provider: 'DEVK', product: 'PHV Komfort Plus', premium: '8 €/Mon.', rating: 5, highlight: true },
+                    { provider: 'HUK-Coburg', product: 'Privat-Haftpflicht', premium: '7 €/Mon.', rating: 5 },
+                    { provider: 'ERGO', product: 'PHV Basis', premium: '9 €/Mon.', rating: 4 },
+                  ],
+                },
+                {
+                  type: 'unfall', icon: '🩹', label: 'Unfallversicherung', status: 'missing',
+                  tariffs: [
+                    { provider: 'ARAG', product: 'Komfort UV', premium: '18 €/Mon.', rating: 4, highlight: true },
+                    { provider: 'Allianz', product: 'Unfall Komfort', premium: '22 €/Mon.', rating: 5 },
+                    { provider: 'Signal Iduna', product: 'UV Smart', premium: '16 €/Mon.', rating: 4 },
+                  ],
+                },
+              ].map((cat) => (
+                <Panel
+                  key={cat.type}
+                  title={`${cat.icon} ${cat.label}`}
+                  action={
+                    <div className="flex gap-s">
+                      <span className={`badge ${cat.status === 'covered' ? 'badge-success' : cat.status === 'gap' ? 'badge-warning' : 'badge-danger'}`}>
+                        {cat.status === 'covered' ? '✓ Abgesichert' : cat.status === 'gap' ? '⚠ Lücke' : '✗ Fehlt'}
+                      </span>
+                      <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/analysis/${customer?.id}/precaution/${cat.type}`)}>
+                        Detail →
+                      </button>
+                    </div>
+                  }
+                >
+                  <table>
+                    <thead>
+                      <tr><th>Anbieter</th><th>Produkt</th><th>Prämie/Monat</th><th>Bewertung</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      {cat.tariffs.map((t, i) => (
+                        <tr key={i} style={t.highlight ? { background: '#e8f4f8' } : {}}>
+                          <td>
+                            <div className="flex items-center gap-s">
+                              <span className="font-bold text-sm">{t.provider}</span>
+                              {t.highlight && <Badge type="success">Empfohlen</Badge>}
+                            </div>
+                          </td>
+                          <td className="text-sm">{t.product}</td>
+                          <td><span className="font-bold text-sm" style={{ color: 'var(--color-green)' }}>{t.premium}</span></td>
+                          <td><span style={{ color: '#fbbf24' }}>{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</span></td>
+                          <td>
+                            <button className="btn btn-primary btn-sm" onClick={() => addToast('success', `Angebot von ${t.provider} angefordert.`)}>
+                              Angebot
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </Panel>
+              ))}
+            </div>
+          )}
+
+          {/* ── Fehlende Felder ───────────────────────────────── */}
+          {activeTab === 'missing' && (
+            <div style={{ display: 'grid', gap: 'var(--sp-l)' }}>
+              <SectionHeader title="Fehlende Felder" subtitle="Übersicht über Datenlücken und offene Pflichtfelder" />
+
+              {(() => {
+                const sections = [
+                  {
+                    label: 'Stammdaten & Kontakt', icon: '👤', link: `/consultation/${customer?.id}`,
+                    fields: [
+                      { label: 'Vorname / Nachname', ok: !!customer?.first_name },
+                      { label: 'Geburtsdatum', ok: !!customer?.birth_date },
+                      { label: 'E-Mail-Adresse', ok: !!customer?.email },
+                      { label: 'Telefonnummer', ok: !!customer?.phone },
+                      { label: 'Adresse vollständig', ok: !!(customer?.address?.street && customer?.address?.zip) },
+                    ],
+                  },
+                  {
+                    label: 'Einkommensdaten', icon: '💶', link: `/consultation/${customer?.id}`,
+                    fields: [
+                      { label: 'Bruttogehalt', ok: !!(fin?.income.gross_salary) },
+                      { label: 'Nettogehalt', ok: !!(fin?.income.net_salary) },
+                      { label: 'Partner-Einkommen (falls vorhanden)', ok: !customer?.has_partner || !!(fin?.income.partner_net) },
+                      { label: 'Monatliche Ausgaben', ok: !!(fin?.expenses.rent) },
+                    ],
+                  },
+                  {
+                    label: 'Altersvorsorge', icon: '🎯', link: `/consultation/${customer?.id}`,
+                    fields: [
+                      { label: 'Gewünschtes Rentenalter', ok: !!(fin?.retirement.desired_age) },
+                      { label: 'Monatlicher Bedarf im Ruhestand', ok: !!(fin?.retirement.monthly_need) },
+                      { label: 'Gesetzliche Rente (Rentenbescheid)', ok: !!(fin?.retirement.state_pension) },
+                      { label: 'Private Vorsorgebeiträge', ok: !!(fin?.retirement.private_pension) },
+                    ],
+                  },
+                  {
+                    label: 'Versicherungen', icon: '🛡️', link: `/consultation/${customer?.id}`,
+                    fields: [
+                      { label: 'Berufsunfähigkeitsversicherung geprüft', ok: !!(fin?.insurances.length) },
+                      { label: 'Haftpflichtversicherung geprüft', ok: !!(fin?.insurances.length) },
+                      { label: 'Krankenversicherungsdetails', ok: false },
+                      { label: 'Risikolebensversicherung geprüft', ok: !!(fin?.insurances.some(i => i.type === 'Leben')) },
+                    ],
+                  },
+                  {
+                    label: 'Investments & Vermögen', icon: '📈', link: `/consultation/${customer?.id}`,
+                    fields: [
+                      { label: 'Gesamtersparnisse erfasst', ok: !!(fin?.savings) },
+                      { label: 'Investitionen / Depot', ok: !!(fin?.investments.length) },
+                      { label: 'Immobilienbesitz geprüft', ok: false },
+                      { label: 'Verbindlichkeiten vollständig', ok: !!(fin?.expenses.loans !== undefined) },
+                    ],
+                  },
+                  {
+                    label: 'Persönliche Wünsche & Ziele', icon: '🎯', link: `/consultation/${customer?.id}`,
+                    fields: [
+                      { label: 'Persönliche Wünsche erfasst', ok: !!(customer?.personal_wishes?.length) },
+                      { label: 'Risikoprofil festgelegt', ok: false },
+                      { label: 'Anlagehorizont definiert', ok: false },
+                    ],
+                  },
+                  {
+                    label: 'Dokumentation & IDD', icon: '📋', link: `/documentation/${customer?.id}`,
+                    fields: [
+                      { label: 'IDD-Erstinformation übermittelt', ok: false },
+                      { label: 'Beratungsprotokoll erstellt', ok: false },
+                      { label: 'Datenschutzerklärung unterzeichnet', ok: false },
+                    ],
+                  },
+                ];
+
+                const totalFields = sections.reduce((s, sec) => s + sec.fields.length, 0);
+                const okFields = sections.reduce((s, sec) => s + sec.fields.filter((f) => f.ok).length, 0);
+                const pct = Math.round((okFields / totalFields) * 100);
+
+                return (
+                  <>
+                    {/* Overall score */}
+                    <div className="card" style={{ padding: 'var(--sp-l)' }}>
+                      <div className="flex justify-between items-center mb-m">
+                        <div>
+                          <div className="font-bold">Datenvollständigkeit</div>
+                          <div className="text-xs text-grey">{okFields} von {totalFields} Feldern ausgefüllt</div>
+                        </div>
+                        <div style={{ fontSize: 'var(--fs-xl)', fontWeight: 700, color: pct >= 80 ? 'var(--color-green)' : pct >= 50 ? 'var(--color-orange)' : 'var(--color-red)' }}>
+                          {pct}%
+                        </div>
+                      </div>
+                      <div className="progress-bar" style={{ height: 12 }}>
+                        <div
+                          className="progress-fill"
+                          style={{
+                            width: `${pct}%`,
+                            background: pct >= 80 ? 'var(--color-green)' : pct >= 50 ? 'var(--color-orange)' : 'var(--color-red)',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {sections.map((sec) => {
+                      const secOk = sec.fields.filter((f) => f.ok).length;
+                      const secAll = sec.fields.length;
+                      const complete = secOk === secAll;
+                      return (
+                        <Panel
+                          key={sec.label}
+                          title={`${sec.icon} ${sec.label} (${secOk}/${secAll})`}
+                          action={
+                            !complete ? (
+                              <button className="btn btn-primary btn-sm" onClick={() => navigate(sec.link)}>
+                                Ausfüllen →
+                              </button>
+                            ) : (
+                              <span className="badge badge-success">✓ Vollständig</span>
+                            )
+                          }
+                        >
+                          <div style={{ display: 'grid', gap: 8 }}>
+                            {sec.fields.map((f, i) => (
+                              <div key={i} className="flex items-center gap-s text-sm">
+                                <span style={{ color: f.ok ? 'var(--color-green)' : 'var(--color-red)', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
+                                  {f.ok ? '✓' : '✗'}
+                                </span>
+                                <span style={{ color: f.ok ? 'var(--text)' : 'var(--text-grey)' }}>{f.label}</span>
+                                {!f.ok && <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-xs)', color: 'var(--color-red)' }}>Ausstehend</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </Panel>
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </div>
           )}
 
