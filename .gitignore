@@ -1,0 +1,47 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+build/
+
+# environment variables
+.env
+.env.local
+.env.*.local
+
+# logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# cache
+.cache/
+.parcel-cache/
+
+# Next.js
+.next/
+
+# coverage
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# uploads
+uploads/
+temp/
+
+# Mac/Linux hidden files
+*.swp
