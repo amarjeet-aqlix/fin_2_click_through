@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../components/Layout';
 import { Tabs, Panel, Avatar, StatusBadge, Badge, Modal, Input, Textarea, Alert, LoadingCenter, EmptyState, SectionHeader } from '../components/UI';
 import { useApp } from '../context';
-import { CUSTOMERS, FINANCIAL_DATA, CONSULTATION_NOTES, DOCUMENTS, WISHES_OPTIONS } from '../mock';
+import { CUSTOMERS, FINANCIAL_DATA, CONSULTATION_NOTES, DOCUMENTS, WISHES_OPTIONS, VIRTUAL_PARTNERS } from '../mock';
 import type { Customer } from '../types';
 
 const TABS = [
@@ -31,6 +31,7 @@ export const CustomerDetail: React.FC = () => {
   const fin = FINANCIAL_DATA[id ?? ''] ?? null;
   const notes = CONSULTATION_NOTES[id ?? ''] ?? [];
   const docs = DOCUMENTS[id ?? ''] ?? [];
+  const partner = id ? (VIRTUAL_PARTNERS[id] ?? null) : null;
 
   useEffect(() => {
     setTimeout(() => {
@@ -192,6 +193,114 @@ export const CustomerDetail: React.FC = () => {
                   )}
                 </Panel>
               </div>
+
+              {/* Partner section */}
+              <Panel title="Familie & Partner">
+                {partner ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-m)', flexWrap: 'wrap' }}>
+                    {/* Main customer node */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px',
+                      background: 'var(--gray-50)',
+                      border: '1.5px solid var(--border)',
+                      borderRadius: 'var(--radius)',
+                      minWidth: 160,
+                    }}>
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 'var(--radius-s)',
+                        background: 'var(--primary-tint)', color: 'var(--primary)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 800, fontSize: 'var(--fs-xs)', flexShrink: 0,
+                      }}>
+                        {customer.first_name[0]}{customer.last_name[0]}
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm">{customer.first_name} {customer.last_name}</div>
+                        <div className="text-xs text-grey">Hauptperson</div>
+                      </div>
+                    </div>
+
+                    {/* Relationship connector */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 18 }}>⟷</div>
+                      <span style={{
+                        fontSize: 'var(--fs-xs)', fontWeight: 700,
+                        color: 'var(--primary)', background: 'var(--primary-tint)',
+                        padding: '2px 8px', borderRadius: 'var(--radius-pill)',
+                      }}>
+                        {partner.rel_name === 'spouse' ? 'Ehepartner/in' : 'Lebenspartner/in'}
+                      </span>
+                    </div>
+
+                    {/* Partner node */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px',
+                      background: 'var(--primary-tint)',
+                      border: '2px solid var(--primary)',
+                      borderRadius: 'var(--radius)',
+                      minWidth: 160,
+                    }}>
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 'var(--radius-s)',
+                        background: 'var(--primary)', color: '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 800, fontSize: 'var(--fs-xs)', flexShrink: 0,
+                      }}>
+                        {partner.first_name[0]}{partner.last_name[0]}
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm" style={{ color: 'var(--primary)' }}>
+                          {partner.first_name} {partner.last_name}
+                        </div>
+                        <div className="text-xs" style={{ color: 'var(--primary)' }}>
+                          {partner.profession || 'Beruf nicht erfasst'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick info + action */}
+                    <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <span className="badge badge-neutral">Virtueller Datensatz</span>
+                        {partner.salary_net && (
+                          <span className="badge badge-primary">
+                            {partner.salary_net.toLocaleString('de-DE')} €/Monat
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => navigate(`/partner/${customer.id}`)}
+                      >
+                        ✏️ Partnerdaten bearbeiten
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-m)', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-m)' }}>
+                      <div style={{
+                        width: 40, height: 40, borderRadius: 'var(--radius)',
+                        background: 'var(--gray-100)', border: '1.5px dashed var(--gray-300)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 18, color: 'var(--text-muted)',
+                      }}>👥</div>
+                      <div>
+                        <div className="font-bold text-sm">Kein Partner erfasst</div>
+                        <div className="text-xs text-grey">Virtueller Datensatz kann in der Datenerfassung angelegt werden</div>
+                      </div>
+                    </div>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => navigate(`/consultation/${customer.id}`, { state: { tab: 'familie' } })}
+                    >
+                      + Partner hinzufügen
+                    </button>
+                  </div>
+                )}
+              </Panel>
 
               {/* Wishes & Goals */}
               <Panel title="Persönliche Wünsche & Ziele">

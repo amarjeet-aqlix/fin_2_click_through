@@ -10,6 +10,7 @@ import { CustomerPortal } from './views/CustomerPortal';
 import { CustomerDataForm } from './views/CustomerDataForm';
 import { ConsultationDoc } from './views/ConsultationDoc';
 import { FirstLogin } from './views/FirstLogin';
+import { PartnerForm } from './views/PartnerForm';
 import { LegalInformation } from './views/LegalInformation';
 import { InitialLegalInformation } from './views/InitialLegalInformation';
 import { DisabledCustomerDashboard } from './views/DisabledCustomerDashboard';
@@ -80,6 +81,12 @@ const AppRoutes: React.FC = () => (
     <Route path="/consultation/:id" element={
       <ProtectedRoute allowedRoles={['admin', 'consultant']}>
         <CustomerDataForm />
+      </ProtectedRoute>
+    } />
+
+    <Route path="/partner/:customerId" element={
+      <ProtectedRoute allowedRoles={['admin', 'consultant']}>
+        <PartnerForm />
       </ProtectedRoute>
     } />
 

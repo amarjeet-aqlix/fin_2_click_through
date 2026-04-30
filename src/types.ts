@@ -153,3 +153,58 @@ export interface Document {
   created_at: string;
   url: string;
 }
+
+// Virtual partner — linked to a customer via relationships[]
+// user_id === null identifies it as virtual (cannot log in)
+export interface VirtualPartner {
+  id: string;                          // virtual customer _id
+  main_customer_id: string;            // the real customer this is linked to
+  rel_name: 'partner' | 'spouse';     // relationship type
+  user_id: null;                       // always null — virtual flag
+
+  // Personal data
+  first_name: string;
+  last_name: string;
+  birth_name?: string;
+  sex: 'm' | 'f' | 'd';
+  birth_date: string;
+  city_of_birth?: string;
+  nationality: string;
+
+  // Contact
+  email?: string;
+  phone?: string;
+  mobile?: string;
+
+  // Address (may share with main customer)
+  street?: string;
+  zip?: string;
+  city?: string;
+
+  // Employment
+  employment: string;
+  profession?: string;
+  employer?: string;
+  employed_since?: string;
+  salary_gross?: number;
+  salary_net?: number;
+
+  // Health insurance
+  kv_type: 'gesetzlich' | 'privat' | 'beihilfe';
+  kv_provider?: string;
+  kv_monthly?: number;
+  smoker?: boolean;
+
+  // Retirement
+  retirement_age?: number;
+  state_pension?: number;
+
+  // Insurances
+  has_bu?: boolean;
+  bu_coverage?: number;
+  has_life?: boolean;
+  life_coverage?: number;
+
+  // Meta
+  created_at: string;
+}

@@ -146,9 +146,6 @@ export const Analysis: React.FC = () => {
   const { addToast } = useApp();
   const navigate = useNavigate();
 
-  // No customer selected — show picker
-  if (!id) return <CustomerPicker />;
-
   const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [fin, setFin] = useState<FinancialData | null>(null);
@@ -163,9 +160,10 @@ export const Analysis: React.FC = () => {
   const [showAddInsurance, setShowAddInsurance] = useState(false);
 
   useEffect(() => {
+    if (!id) { setLoading(false); return; }
     setTimeout(() => {
       const c = CUSTOMERS.find((x) => x.id === id);
-      const f = FINANCIAL_DATA[id ?? ''] ?? null;
+      const f = FINANCIAL_DATA[id] ?? null;
       setCustomer(c ?? null);
       setFin(f);
       if (c) setIncomeData({ gross: String(f?.income.gross_salary ?? ''), net: String(f?.income.net_salary ?? ''), other: String(f?.income.other_income ?? ''), rental: String(f?.income.rental_income ?? '') });
@@ -173,6 +171,9 @@ export const Analysis: React.FC = () => {
       setLoading(false);
     }, 600);
   }, [id]);
+
+  // No customer selected — show picker (after all hooks)
+  if (!id) return <CustomerPicker />;
 
   const handleSave = async () => {
     await new Promise((r) => setTimeout(r, 600));

@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '../components/Layout';
 import { Tabs, Panel, Input, Select, Alert, Badge, Toggle, EmptyState, LoadingCenter, Modal, Avatar, SectionHeader } from '../components/UI';
 import { useApp } from '../context';
-import { CUSTOMERS, WISHES_OPTIONS } from '../mock';
-import type { Customer } from '../types';
+import { CUSTOMERS, WISHES_OPTIONS, VIRTUAL_PARTNERS } from '../mock';
+import type { Customer, VirtualPartner } from '../types';
 
 // ── Mock form data ───────────────────────────────────────────
 const INITIAL_FORM = {
@@ -139,13 +139,18 @@ export const CustomerDataForm: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [partner, setPartner] = useState<VirtualPartner | null>(null);
   const [activeTab, setActiveTab] = useState('stammdaten');
   const [form, setForm] = useState(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
   const [showAddChild, setShowAddChild] = useState(false);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [showAddPartner, setShowAddPartner] = useState(false);
+  const [showRemovePartner, setShowRemovePartner] = useState(false);
+  const [removingPartner, setRemovingPartner] = useState(false);
   const [newChild, setNewChild] = useState({ first_name: '', last_name: '', birth_date: '', in_household: true });
   const [newVehicle, setNewVehicle] = useState({ type: 'PKW', brand: '', model: '', year: '', value: '', insured: true });
+  const [newPartner, setNewPartner] = useState({ first_name: '', last_name: '', birth_date: '', sex: 'f', rel_name: 'spouse' });
   const [completedTabs, setCompletedTabs] = useState<string[]>(['stammdaten', 'familie']);
 
   const upd = (key: string) => (v: string | boolean) => setForm((p) => ({ ...p, [key]: v }));
@@ -153,7 +158,9 @@ export const CustomerDataForm: React.FC = () => {
   useEffect(() => {
     setTimeout(() => {
       const c = CUSTOMERS.find((x) => x.id === id);
+      const p = id ? (VIRTUAL_PARTNERS[id] ?? null) : null;
       setCustomer(c ?? null);
+      setPartner(p);
       setLoading(false);
     }, 500);
   }, [id]);
@@ -294,28 +301,161 @@ export const CustomerDataForm: React.FC = () => {
           {/* ── Familie ────────────────────────────────────────── */}
           {activeTab === 'familie' && (
             <div>
-              <Panel title="Partnerdaten" action={<Toggle checked={form.has_partner} onChange={upd('has_partner')} label="Partner vorhanden" />}>
-                {form.has_partner ? (
-                  <>
-                    <div className="form-row">
-                      <Input label="Vorname Partner/in" value={form.partner_first_name} onChange={upd('partner_first_name')} />
-                      <Input label="Nachname Partner/in" value={form.partner_last_name} onChange={upd('partner_last_name')} />
+              {/* ── Partner section ── */}
+              <div style={{ marginBottom: 'var(--sp-m)' }}>
+                <div className="flex items-center justify-between" style={{ marginBottom: 'var(--sp-m)' }}>
+                  <div>
+                    <div className="font-bold" style={{ fontSize: 'var(--fs-m)' }}>Partner / Ehepartner</div>
+                    <div className="text-xs text-grey">
+                      Als separater virtueller Datensatz gespeichert — bidirektional verknüpft
                     </div>
-                    <div className="form-row">
-                      <Input label="Geburtsdatum" type="date" value={form.partner_birth_date} onChange={upd('partner_birth_date')} />
-                      <Select label="Beschäftigung" value={form.partner_employment} onChange={upd('partner_employment')} options={EMPLOYMENT_OPTIONS} />
-                    </div>
-                    <div className="form-row">
-                      <Input label="Beruf" value={form.partner_profession} onChange={upd('partner_profession')} />
-                      <Input label="Nettoeinkommen (€/Monat)" type="number" value={form.partner_income} onChange={upd('partner_income')} />
-                    </div>
-                    <Select label="Krankenversicherung Partner" value="gesetzlich" onChange={() => {}} options={KV_OPTIONS} />
-                  </>
-                ) : (
-                  <div className="text-sm text-grey" style={{ padding: 'var(--sp-m) 0' }}>Kein Partner vorhanden.</div>
-                )}
-              </Panel>
+                  </div>
+                </div>
 
+                {partner ? (
+                  /* ── Partner exists — show card ── */
+                  <div style={{
+                    border: '1.5px solid var(--border)',
+                    borderRadius: 'var(--radius-l)',
+                    overflow: 'hidden',
+                    background: 'var(--surface)',
+                  }}>
+                    {/* Card header */}
+                    <div style={{
+                      background: 'var(--primary)',
+                      padding: 'var(--sp-m) var(--sp-l)',
+                      display: 'flex', alignItems: 'center', gap: 'var(--sp-m)',
+                    }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 'var(--radius)',
+                        background: 'rgba(255,255,255,0.2)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 800, color: '#fff', fontSize: 'var(--fs-m)',
+                        flexShrink: 0,
+                      }}>
+                        {partner.first_name[0]}{partner.last_name[0]}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: '#fff', fontWeight: 700, fontSize: 'var(--fs-ml)' }}>
+                          {partner.first_name} {partner.last_name}
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'var(--fs-xs)' }}>
+                          {partner.rel_name === 'spouse' ? 'Ehepartner/in' : 'Lebenspartner/in'}
+                          {' · '}geb. {partner.birth_date ? new Date(partner.birth_date).toLocaleDateString('de-DE') : '—'}
+                        </div>
+                      </div>
+                      <div className="flex gap-s">
+                        <span className="badge" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+                          Virtueller Datensatz
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card body — quick overview */}
+                    <div style={{ padding: 'var(--sp-l)' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'var(--sp-m)', marginBottom: 'var(--sp-l)' }}>
+                        {[
+                          { icon: '💼', label: 'Beruf', value: partner.profession || '—' },
+                          { icon: '💶', label: 'Nettoeinkommen', value: partner.salary_net ? `${partner.salary_net.toLocaleString('de-DE')} €/Monat` : '—' },
+                          { icon: '🏥', label: 'Krankenversicherung', value: partner.kv_type === 'gesetzlich' ? 'GKV' : partner.kv_type === 'privat' ? 'PKV' : 'Beihilfe+PKV' },
+                          { icon: '📍', label: 'Adresse', value: partner.city || '—' },
+                          { icon: '🎯', label: 'Rentenalter', value: partner.retirement_age ? `${partner.retirement_age} Jahre` : '—' },
+                          { icon: '🛡️', label: 'BU-Versicherung', value: partner.has_bu ? `${(partner.bu_coverage ?? 0).toLocaleString('de-DE')} €` : 'Nicht vorhanden' },
+                        ].map((item) => (
+                          <div key={item.label} style={{
+                            padding: 'var(--sp-m)',
+                            background: 'var(--gray-50)',
+                            borderRadius: 'var(--radius)',
+                            border: '1px solid var(--border)',
+                          }}>
+                            <div style={{ fontSize: 16, marginBottom: 4 }}>{item.icon}</div>
+                            <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 2 }}>{item.label}</div>
+                            <div style={{ fontSize: 'var(--fs-s)', fontWeight: 600, color: 'var(--text)' }}>{item.value}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Relationship info */}
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 'var(--sp-m)',
+                        padding: 'var(--sp-m)',
+                        background: 'var(--primary-tint)',
+                        borderRadius: 'var(--radius)',
+                        border: '1px solid var(--primary-tint2)',
+                        marginBottom: 'var(--sp-l)',
+                        flexWrap: 'wrap',
+                      }}>
+                        <span style={{ fontSize: 20 }}>🔗</span>
+                        <div style={{ flex: 1 }}>
+                          <div className="font-bold text-sm">Bidirektionale Verknüpfung aktiv</div>
+                          <div className="text-xs text-grey">
+                            {customer?.first_name} {customer?.last_name} ⟷ {partner.first_name} {partner.last_name}
+                            {' '}· Datensatz-ID: <span style={{ fontFamily: 'monospace' }}>{partner.id}</span>
+                          </div>
+                        </div>
+                        <span className="badge badge-success">Verknüpft</span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-s" style={{ flexWrap: 'wrap' }}>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => navigate(`/partner/${id}`)}
+                        >
+                          ✏️ Partnerdaten bearbeiten
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => navigate(`/analysis/${id}`)}
+                        >
+                          📊 Gemeinsame Analyse
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{ marginLeft: 'auto', color: 'var(--danger-text)' }}
+                          onClick={() => setShowRemovePartner(true)}
+                        >
+                          🗑 Verknüpfung entfernen
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* ── No partner — empty state with add flow ── */
+                  <div style={{
+                    border: '1.5px dashed var(--border)',
+                    borderRadius: 'var(--radius-l)',
+                    padding: 'var(--sp-xl)',
+                    textAlign: 'center',
+                    background: 'var(--gray-50)',
+                  }}>
+                    <div style={{ fontSize: 48, marginBottom: 'var(--sp-m)', opacity: 0.4 }}>👥</div>
+                    <div style={{ fontWeight: 700, fontSize: 'var(--fs-m)', marginBottom: 8 }}>
+                      Kein Partner erfasst
+                    </div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-s)', marginBottom: 'var(--sp-l)', maxWidth: 400, margin: '0 auto var(--sp-l)' }}>
+                      Ein Partner wird als eigenständiger virtueller Datensatz angelegt
+                      und bidirektional mit diesem Kunden verknüpft. Er erhält ein
+                      vollständiges eigenes Formular.
+                    </div>
+                    <button className="btn btn-primary" onClick={() => setShowAddPartner(true)}>
+                      + Partner hinzufügen
+                    </button>
+
+                    <div style={{ marginTop: 'var(--sp-l)', padding: 'var(--sp-m)', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', textAlign: 'left', maxWidth: 480, margin: 'var(--sp-l) auto 0' }}>
+                      <div className="text-xs font-bold text-grey" style={{ textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Was passiert beim Hinzufügen?</div>
+                      <div style={{ display: 'grid', gap: 6, fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+                        <div>① Neuer virtueller Datensatz wird erstellt (user_id = null)</div>
+                        <div>② Bidirektionale Verknüpfung wird gesetzt (relationships[])</div>
+                        <div>③ Partner erhält vollständiges eigenes Formular</div>
+                        <div>④ Gemeinsame Analyse wird automatisch verfügbar</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Kinder ── */}
               <Panel title="Kinder" action={<button className="btn btn-primary btn-sm" onClick={() => setShowAddChild(true)}>+ Kind hinzufügen</button>}>
                 {form.children.length === 0 ? (
                   <EmptyState icon="👶" text="Keine Kinder erfasst" sub="Fügen Sie Kinder hinzu falls vorhanden." />
@@ -343,6 +483,151 @@ export const CustomerDataForm: React.FC = () => {
                 <div className="text-xs text-grey mt-s">Bei Ja: Monatliche Unterhaltsbeträge erfassen</div>
               </Panel>
             </div>
+          )}
+
+          {/* ── Add Partner Modal ───────────────────────────────── */}
+          {showAddPartner && (
+            <Modal title="Partner hinzufügen" onClose={() => setShowAddPartner(false)}>
+              <div style={{ padding: 'var(--sp-m)', display: 'grid', gap: 'var(--sp-m)' }}>
+                <Alert type="info">
+                  Ein neuer virtueller Datensatz wird erstellt und bidirektional
+                  mit <strong>{customer?.first_name} {customer?.last_name}</strong> verknüpft.
+                  Nach dem Anlegen können alle Daten im Partnerformular erfasst werden.
+                </Alert>
+
+                <Select
+                  label="Beziehungstyp *"
+                  value={newPartner.rel_name}
+                  onChange={(v) => setNewPartner((p) => ({ ...p, rel_name: v }))}
+                  options={[
+                    { value: 'spouse',  label: 'Ehepartner/in (verheiratet)' },
+                    { value: 'partner', label: 'Lebenspartner/in (nicht verheiratet)' },
+                  ]}
+                />
+
+                <div className="grid-2">
+                  <Select
+                    label="Anrede *"
+                    value={newPartner.sex}
+                    onChange={(v) => setNewPartner((p) => ({ ...p, sex: v }))}
+                    options={[
+                      { value: 'f', label: 'Frau' },
+                      { value: 'm', label: 'Herr' },
+                      { value: 'd', label: 'Divers' },
+                    ]}
+                  />
+                  <Input
+                    label="Geburtsdatum"
+                    type="date"
+                    value={newPartner.birth_date}
+                    onChange={(v) => setNewPartner((p) => ({ ...p, birth_date: v }))}
+                  />
+                </div>
+
+                <div className="grid-2">
+                  <Input
+                    label="Vorname *"
+                    value={newPartner.first_name}
+                    onChange={(v) => setNewPartner((p) => ({ ...p, first_name: v }))}
+                    placeholder="Vorname"
+                  />
+                  <Input
+                    label="Nachname *"
+                    value={newPartner.last_name}
+                    onChange={(v) => setNewPartner((p) => ({ ...p, last_name: v }))}
+                    placeholder="Nachname"
+                  />
+                </div>
+
+                {/* Backend flow explanation */}
+                <div style={{ background: 'var(--gray-50)', borderRadius: 'var(--radius)', padding: 'var(--sp-m)', border: '1px solid var(--border)' }}>
+                  <div className="text-xs font-bold text-grey" style={{ textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
+                    Backend-Flow (POST /add_virtual_customer)
+                  </div>
+                  <div style={{ display: 'grid', gap: 5, fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                    <div>customer: "{id}"</div>
+                    <div>rel_name: "{newPartner.rel_name}"</div>
+                    <div>new_virtual_customer: {'{ first_name, last_name, sex, birth_date }'}</div>
+                  </div>
+                </div>
+
+                <div className="flex gap-s justify-end">
+                  <button className="btn btn-secondary" onClick={() => setShowAddPartner(false)}>
+                    Abbrechen
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    disabled={!newPartner.first_name || !newPartner.last_name}
+                    onClick={() => {
+                      // Simulate creating virtual partner
+                      const vp: VirtualPartner = {
+                        id: `vp_${id}_${Date.now()}`,
+                        main_customer_id: id ?? '',
+                        rel_name: newPartner.rel_name as 'spouse' | 'partner',
+                        user_id: null,
+                        first_name: newPartner.first_name,
+                        last_name: newPartner.last_name,
+                        sex: newPartner.sex as 'm' | 'f' | 'd',
+                        birth_date: newPartner.birth_date,
+                        nationality: 'deutsch',
+                        employment: 'angestellt',
+                        kv_type: 'gesetzlich',
+                        created_at: new Date().toISOString().split('T')[0],
+                      };
+                      setPartner(vp);
+                      setShowAddPartner(false);
+                      setNewPartner({ first_name: '', last_name: '', birth_date: '', sex: 'f', rel_name: 'spouse' });
+                      addToast('success', `Partner ${vp.first_name} ${vp.last_name} wurde erfolgreich angelegt und verknüpft.`);
+                    }}
+                  >
+                    ✓ Partner anlegen &amp; verknüpfen
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          )}
+
+          {/* ── Remove Partner Modal ────────────────────────────── */}
+          {showRemovePartner && partner && (
+            <Modal title="Partnerverknüpfung entfernen" onClose={() => setShowRemovePartner(false)}>
+              <div style={{ padding: 'var(--sp-m)', display: 'grid', gap: 'var(--sp-m)' }}>
+                <Alert type="danger">
+                  <strong>Achtung:</strong> Der virtuelle Datensatz von{' '}
+                  <strong>{partner.first_name} {partner.last_name}</strong> und alle
+                  erfassten Partnerdaten werden unwiderruflich gelöscht.
+                </Alert>
+
+                <div style={{ background: 'var(--gray-50)', borderRadius: 'var(--radius)', padding: 'var(--sp-m)', border: '1px solid var(--border)' }}>
+                  <div className="text-xs font-bold text-grey" style={{ textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
+                    Backend-Flow (POST /delete_virtual_customer)
+                  </div>
+                  <div style={{ display: 'grid', gap: 5, fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                    <div>① $pull relationship aus Hauptkunde</div>
+                    <div>② $pull relationship aus Partner</div>
+                    <div>③ Hard-Delete: Customer collection</div>
+                    <div>④ Cascade: Dateien, Dokumente, PDFs</div>
+                  </div>
+                </div>
+
+                <div className="flex gap-s justify-end">
+                  <button className="btn btn-secondary" onClick={() => setShowRemovePartner(false)}>Abbrechen</button>
+                  <button
+                    className="btn btn-danger"
+                    disabled={removingPartner}
+                    onClick={async () => {
+                      setRemovingPartner(true);
+                      await new Promise((r) => setTimeout(r, 900));
+                      setPartner(null);
+                      setRemovingPartner(false);
+                      setShowRemovePartner(false);
+                      addToast('success', 'Partnerverknüpfung wurde entfernt.');
+                    }}
+                  >
+                    {removingPartner ? 'Wird entfernt…' : '🗑 Endgültig entfernen'}
+                  </button>
+                </div>
+              </div>
+            </Modal>
           )}
 
           {/* ── Einkommen & Ausgaben ───────────────────────────── */}
