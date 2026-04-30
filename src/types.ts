@@ -208,3 +208,45 @@ export interface VirtualPartner {
   // Meta
   created_at: string;
 }
+
+export type PrecautionWeighting = 'PROPERTY' | 'VERRY_IMPORTANT' | 'IMPORTANT' | 'NICE_TO_HAVE';
+export type PropertyTimespan = 'SHORT' | 'MEDIUM' | 'LONG';
+export type PrecautionStatus = 'UNDECIDED' | 'CONSULTATION_WANTED' | 'NO_CONSULTATION_WANTED' | 'CONSULTED_BUT_NO_TERMINATION';
+
+export interface PrecautionType {
+  id: string;
+  type_id: string;
+  name: string;
+  icon: string;
+  custom_view?: 'retirement_provisions' | 'health_insurance' | 'income' | 'decease' | 'nest_egg';
+}
+
+export interface PrecautionContract {
+  id: string;
+  precaution_type_id: string;
+  company?: string;
+  tariff?: string;
+  fee: number;
+  payment_frequency: 'monthly' | 'yearly' | 'quarterly';
+  percentage: number;
+  customer_wishes_contract?: boolean;
+  hide_from_suggested_state?: boolean;
+}
+
+export interface Precaution {
+  id: string;
+  precaution_type: PrecautionType;
+  weighting: PrecautionWeighting;
+  property_timespan?: PropertyTimespan;
+  status: PrecautionStatus;
+  priority: number;
+  progress_current_state?: number;
+  progress_suggested_state?: number;
+}
+
+export interface CustomerConsultation {
+  customer_id: string;
+  precautions: Precaution[];
+  current_state: PrecautionContract[];
+  suggested_state: PrecautionContract[];
+}

@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '../components/Layout';
 import { Tabs, Panel, Badge, Alert, EmptyState, SectionHeader, Progress, Input, Toggle } from '../components/UI';
 import { useApp } from '../context';
-import { FINANCIAL_DATA, DOCUMENTS, WISHES_OPTIONS, COMPANY_INFO } from '../mock';
+import { FINANCIAL_DATA, DOCUMENTS, WISHES_OPTIONS, COMPANY_INFO, CUSTOMER_CONSULTATIONS } from '../mock';
+import { FinancialHouse } from '../components/FinancialHouse';
 
 const PORTAL_TABS = [
   { id: 'overview', label: 'Übersicht', icon: '🏠' },
@@ -113,6 +114,18 @@ export const CustomerPortal: React.FC = () => {
                       </div>
                     ))}
                   </Panel>
+
+                  {/* Financial House */}
+                  {CUSTOMER_CONSULTATIONS['cust1'] && (
+                    <div style={{ marginTop: 'var(--sp-l)' }}>
+                      <FinancialHouse
+                        precautions={CUSTOMER_CONSULTATIONS['cust1'].precautions}
+                        current_state={CUSTOMER_CONSULTATIONS['cust1'].current_state}
+                        suggested_state={CUSTOMER_CONSULTATIONS['cust1'].suggested_state}
+                        isConsultant={false}
+                      />
+                    </div>
+                  )}
 
                   {/* Contact advisor */}
                   <Alert type="info">

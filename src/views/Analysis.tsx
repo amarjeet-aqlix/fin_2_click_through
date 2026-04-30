@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '../components/Layout';
 import { Tabs, Panel, Input, Select, Alert, Badge, Progress, LoadingCenter, EmptyState, SectionHeader, Avatar } from '../components/UI';
 import { useApp } from '../context';
-import { CUSTOMERS, FINANCIAL_DATA } from '../mock';
-import type { Customer, FinancialData } from '../types';
+import { CUSTOMERS, FINANCIAL_DATA, CUSTOMER_CONSULTATIONS } from '../mock';
+import type { Customer, FinancialData, Precaution } from '../types';
+import { FinancialHouse } from '../components/FinancialHouse';
 
 // ── Customer picker shown when no ID in URL ──────────────────
 const CustomerPicker: React.FC = () => {
@@ -58,6 +59,7 @@ const CustomerPicker: React.FC = () => {
 
 const TABS = [
   { id: 'overview', label: 'Übersicht', icon: '📊' },
+  { id: 'finanzhaus', label: 'Finanzhaus', icon: '🏡' },
   { id: 'income', label: 'Einkommen', icon: '💶' },
   { id: 'retirement', label: 'Altersvorsorge', icon: '🎯' },
   { id: 'investment', label: 'Investitionen', icon: '📈' },
@@ -158,6 +160,10 @@ export const Analysis: React.FC = () => {
   const [retirementData, setRetirementData] = useState({ desired_age: '', monthly_need: '', state_pension: '' });
   const [newInsurance, setNewInsurance] = useState({ name: '', provider: '', type: '', premium: '' });
   const [showAddInsurance, setShowAddInsurance] = useState(false);
+  const [consultation, setConsultation] = useState(() => CUSTOMER_CONSULTATIONS[id ?? ''] ?? null);
+  const [consultationPrecautions, setConsultationPrecautions] = useState<Precaution[]>(
+    () => CUSTOMER_CONSULTATIONS[id ?? '']?.precautions ?? []
+  );
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -228,6 +234,29 @@ export const Analysis: React.FC = () => {
       <div className="card">
         <Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
         <div className="tab-content">
+
+          {/* ── Finanzhaus ────────────────────────────────────── */}
+          {activeTab === 'finanzhaus' && (
+            consultationPrecautions.length === 0 ? (
+              <div style={{ padding: 32, textAlign: 'center', color: '#94a3b8' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🏡</div>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Keine Vorsorgedaten hinterlegt</div>
+                <div style={{ fontSize: 13 }}>Für diesen Kunden wurden noch keine Vorsorgebereiche konfiguriert.</div>
+              </div>
+            ) : (
+              <FinancialHouse
+                precautions={consultationPrecautions}
+                current_state={consultation?.current_state ?? []}
+                suggested_state={consultation?.suggested_state ?? []}
+                isConsultant
+                onUpdatePrecaution={(pid, changes) => {
+                  setConsultationPrecautions(prev =>
+                    prev.map(p => p.id === pid ? { ...p, ...changes } : p)
+                  );
+                }}
+              />
+            )
+          )}
 
           {/* ── Übersicht ─────────────────────────────────────── */}
           {activeTab === 'overview' && fin && (

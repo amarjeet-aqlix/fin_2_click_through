@@ -549,6 +549,78 @@ export const WISHES_OPTIONS = [
   'Finanzielle Unabhängigkeit', 'Schuldenfrei sein', 'Notgroschen aufbauen',
 ];
 
+export const PRECAUTION_TYPES = [
+  { id: 'pt1', type_id: 'nest_egg', name: 'Notgroschen', icon: '🏦', custom_view: 'nest_egg' as const },
+  { id: 'pt2', type_id: 'investment', name: 'Investment', icon: '📈' },
+  { id: 'pt3', type_id: 'retirement', name: 'Altersvorsorge', icon: '🏖️', custom_view: 'retirement_provisions' as const },
+  { id: 'pt4', type_id: 'real_estate', name: 'Immobilie', icon: '🏠' },
+  { id: 'pt5', type_id: 'health', name: 'Krankenversicherung', icon: '🏥', custom_view: 'health_insurance' as const },
+  { id: 'pt6', type_id: 'decease', name: 'Todesfallleistungen', icon: '🛡️', custom_view: 'decease' as const },
+  { id: 'pt7', type_id: 'income', name: 'Einkommensvorsorge', icon: '💼', custom_view: 'income' as const },
+  { id: 'pt8', type_id: 'liability', name: 'Privathaftpflicht', icon: '⚖️' },
+  { id: 'pt9', type_id: 'property', name: 'Wohngebäude', icon: '🏘️' },
+  { id: 'pt10', type_id: 'accident', name: 'Unfall', icon: '🚑' },
+  { id: 'pt11', type_id: 'legal', name: 'Rechtsschutz', icon: '📋' },
+  { id: 'pt12', type_id: 'travel', name: 'Reiseversicherung', icon: '✈️' },
+];
+
+export const CUSTOMER_CONSULTATIONS: Record<string, {
+  customer_id: string;
+  precautions: import('./types').Precaution[];
+  current_state: import('./types').PrecautionContract[];
+  suggested_state: import('./types').PrecautionContract[];
+}> = {
+  cust1: {
+    customer_id: 'cust1',
+    precautions: [
+      { id: 'p1', precaution_type: PRECAUTION_TYPES[0], weighting: 'PROPERTY', property_timespan: 'SHORT', status: 'CONSULTED_BUT_NO_TERMINATION', priority: 1, progress_current_state: 95, progress_suggested_state: 100 },
+      { id: 'p2', precaution_type: PRECAUTION_TYPES[1], weighting: 'PROPERTY', property_timespan: 'MEDIUM', status: 'CONSULTATION_WANTED', priority: 2, progress_current_state: 0, progress_suggested_state: 60 },
+      { id: 'p3', precaution_type: PRECAUTION_TYPES[2], weighting: 'PROPERTY', property_timespan: 'LONG', status: 'UNDECIDED', priority: 3, progress_current_state: 45, progress_suggested_state: 80 },
+      { id: 'p4', precaution_type: PRECAUTION_TYPES[3], weighting: 'PROPERTY', property_timespan: 'LONG', status: 'UNDECIDED', priority: 4, progress_current_state: 0, progress_suggested_state: 0 },
+      { id: 'p5', precaution_type: PRECAUTION_TYPES[4], weighting: 'VERRY_IMPORTANT', status: 'CONSULTED_BUT_NO_TERMINATION', priority: 5, progress_current_state: 100, progress_suggested_state: 100 },
+      { id: 'p6', precaution_type: PRECAUTION_TYPES[5], weighting: 'VERRY_IMPORTANT', status: 'UNDECIDED', priority: 6, progress_current_state: 0, progress_suggested_state: 70 },
+      { id: 'p7', precaution_type: PRECAUTION_TYPES[6], weighting: 'VERRY_IMPORTANT', status: 'CONSULTATION_WANTED', priority: 7, progress_current_state: 75, progress_suggested_state: 90 },
+      { id: 'p8', precaution_type: PRECAUTION_TYPES[7], weighting: 'IMPORTANT', status: 'CONSULTED_BUT_NO_TERMINATION', priority: 8, progress_current_state: 85, progress_suggested_state: 85 },
+      { id: 'p9', precaution_type: PRECAUTION_TYPES[8], weighting: 'IMPORTANT', status: 'CONSULTATION_WANTED', priority: 9, progress_current_state: 76, progress_suggested_state: 76 },
+      { id: 'p10', precaution_type: PRECAUTION_TYPES[9], weighting: 'IMPORTANT', status: 'UNDECIDED', priority: 10, progress_current_state: 0, progress_suggested_state: 50 },
+      { id: 'p11', precaution_type: PRECAUTION_TYPES[10], weighting: 'IMPORTANT', status: 'UNDECIDED', priority: 11, progress_current_state: 0, progress_suggested_state: 40 },
+      { id: 'p12', precaution_type: PRECAUTION_TYPES[11], weighting: 'NICE_TO_HAVE', status: 'NO_CONSULTATION_WANTED', priority: 12, progress_current_state: 0, progress_suggested_state: 0 },
+    ],
+    current_state: [
+      { id: 'cs1', precaution_type_id: 'pt1', company: 'Sparkasse', tariff: 'Tagesgeld', fee: 0, payment_frequency: 'monthly', percentage: 95 },
+      { id: 'cs2', precaution_type_id: 'pt5', company: 'AOK', tariff: 'Gesetzlich', fee: 420, payment_frequency: 'monthly', percentage: 100 },
+      { id: 'cs3', precaution_type_id: 'pt7', company: 'Allianz', tariff: 'BU Klassik', fee: 89, payment_frequency: 'monthly', percentage: 75 },
+      { id: 'cs4', precaution_type_id: 'pt8', company: 'ERGO', tariff: 'Haftpflicht Plus', fee: 8, payment_frequency: 'monthly', percentage: 85 },
+      { id: 'cs5', precaution_type_id: 'pt9', company: 'HUK-COBURG', tariff: 'WohngebäudeKomfort', fee: 55, payment_frequency: 'monthly', percentage: 76 },
+      { id: 'cs6', precaution_type_id: 'pt3', company: 'Deutsche Rentenversicherung', tariff: 'Gesetzliche Rente', fee: 310, payment_frequency: 'monthly', percentage: 45 },
+    ],
+    suggested_state: [
+      { id: 'ss1', precaution_type_id: 'pt2', company: 'DWS', tariff: 'ETF Portfolio', fee: 100, payment_frequency: 'monthly', percentage: 60, customer_wishes_contract: true },
+      { id: 'ss2', precaution_type_id: 'pt3', company: 'Allianz', tariff: 'Riester Rente', fee: 150, payment_frequency: 'monthly', percentage: 35, customer_wishes_contract: false },
+      { id: 'ss3', precaution_type_id: 'pt6', company: 'Zurich', tariff: 'Risikoleben', fee: 25, payment_frequency: 'monthly', percentage: 70, customer_wishes_contract: true },
+      { id: 'ss4', precaution_type_id: 'pt10', company: 'DEVK', tariff: 'Unfall Premium', fee: 12, payment_frequency: 'monthly', percentage: 50, customer_wishes_contract: false },
+      { id: 'ss5', precaution_type_id: 'pt11', company: 'ARAG', tariff: 'Rechtsschutz Basis', fee: 18, payment_frequency: 'monthly', percentage: 40, customer_wishes_contract: false },
+    ],
+  },
+  cust2: {
+    customer_id: 'cust2',
+    precautions: [
+      { id: 'q1', precaution_type: PRECAUTION_TYPES[0], weighting: 'PROPERTY', property_timespan: 'SHORT', status: 'UNDECIDED', priority: 1, progress_current_state: 50, progress_suggested_state: 100 },
+      { id: 'q2', precaution_type: PRECAUTION_TYPES[2], weighting: 'PROPERTY', property_timespan: 'LONG', status: 'CONSULTATION_WANTED', priority: 2, progress_current_state: 30, progress_suggested_state: 70 },
+      { id: 'q3', precaution_type: PRECAUTION_TYPES[4], weighting: 'VERRY_IMPORTANT', status: 'CONSULTED_BUT_NO_TERMINATION', priority: 3, progress_current_state: 100, progress_suggested_state: 100 },
+      { id: 'q4', precaution_type: PRECAUTION_TYPES[6], weighting: 'VERRY_IMPORTANT', status: 'UNDECIDED', priority: 4, progress_current_state: 40, progress_suggested_state: 80 },
+      { id: 'q5', precaution_type: PRECAUTION_TYPES[7], weighting: 'IMPORTANT', status: 'UNDECIDED', priority: 5, progress_current_state: 60, progress_suggested_state: 85 },
+    ],
+    current_state: [
+      { id: 'qc1', precaution_type_id: 'pt1', company: 'ING', tariff: 'Extra-Konto', fee: 0, payment_frequency: 'monthly', percentage: 50 },
+      { id: 'qc2', precaution_type_id: 'pt5', company: 'TK', tariff: 'Gesetzlich', fee: 395, payment_frequency: 'monthly', percentage: 100 },
+      { id: 'qc3', precaution_type_id: 'pt7', company: 'Generali', tariff: 'BU Basis', fee: 65, payment_frequency: 'monthly', percentage: 40 },
+      { id: 'qc4', precaution_type_id: 'pt8', company: 'AXA', tariff: 'Haftpflicht Basis', fee: 7, payment_frequency: 'monthly', percentage: 60 },
+    ],
+    suggested_state: [],
+  },
+};
+
 export const COMPANY_INFO = {
   id: 'c1',
   name: 'Finanz & Vorsorge GmbH',
