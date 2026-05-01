@@ -95,7 +95,7 @@ export const Dashboard: React.FC = () => {
   return (
     <AppLayout title="Kundenverwaltung">
       {/* Stats bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--sp-m)', marginBottom: 'var(--sp-l)' }}>
+      <div className="stats-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--sp-m)', marginBottom: 'var(--sp-l)' }}>
         <StatCard icon="👥" value={stats.total} label="Kunden gesamt" />
         <StatCard icon="✅" value={stats.active} label="Aktive Kunden" />
         <StatCard icon="🔧" value={stats.support} label="Im Support-Modus" />
@@ -126,54 +126,54 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Filters */}
-        <div style={{ padding: 'var(--sp-m)', borderBottom: '1px solid var(--gray-medium)', background: 'var(--gray-light)' }}>
-          <div className="search-bar">
-            <div className="search-input-wrap">
-              <span className="search-input-icon">🔍</span>
-              <input
-                className="search-input"
-                placeholder="Suche nach Name, E-Mail, Ort..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
-            {user?.role === 'admin' && (
-              <select
-                className="form-control"
-                style={{ width: 'auto', minWidth: 160 }}
-                value={filterConsultant}
-                onChange={(e) => setFilterConsultant(e.target.value)}
-              >
-                <option value="all">Alle Berater</option>
-                {CONSULTANTS.map((c) => (
-                  <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
-                ))}
-              </select>
-            )}
-
-            <select
-              className="form-control"
-              style={{ width: 'auto', minWidth: 140 }}
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">Alle Status</option>
-              <option value="active">Aktiv</option>
-              <option value="inactive">Inaktiv</option>
-              <option value="support">Support</option>
-            </select>
-
-            {(search || filterConsultant !== 'all' || filterStatus !== 'all') && (
-              <button className="btn btn-sm btn-secondary" onClick={() => { setSearch(''); setFilterConsultant('all'); setFilterStatus('all'); }}>
-                Filter zurücksetzen
-              </button>
-            )}
+        {/* Filter strip */}
+        <div className="filter-strip">
+          <div className="search-pill-wrap">
+            <span className="search-pill-icon">🔍</span>
+            <input
+              className="search-pill"
+              placeholder="Name, E-Mail oder Ort suchen..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
+
+          {user?.role === 'admin' && (
+            <select
+              className="filter-pill"
+              value={filterConsultant}
+              onChange={(e) => setFilterConsultant(e.target.value)}
+            >
+              <option value="all">Alle Berater</option>
+              {CONSULTANTS.map((c) => (
+                <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
+              ))}
+            </select>
+          )}
+
+          <select
+            className="filter-pill"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">Alle Status</option>
+            <option value="active">Aktiv</option>
+            <option value="inactive">Inaktiv</option>
+            <option value="support">Support</option>
+          </select>
+
+          {(search || filterConsultant !== 'all' || filterStatus !== 'all') && (
+            <button className="btn btn-sm btn-secondary" style={{ borderRadius: 'var(--radius-pill)' }} onClick={() => { setSearch(''); setFilterConsultant('all'); setFilterStatus('all'); }}>
+              × Zurücksetzen
+            </button>
+          )}
+
+          <span className="text-xs text-grey" style={{ marginLeft: 'auto' }}>
+            {filtered.length} Kunden
+          </span>
         </div>
 
-        {/* Table */}
+        {/* Customer cards */}
         {loading ? (
           <LoadingCenter text="Kunden werden geladen..." />
         ) : filtered.length === 0 ? (
@@ -184,96 +184,50 @@ export const Dashboard: React.FC = () => {
             action={<button className="btn btn-primary" onClick={() => setShowAddModal(true)}>+ Neuer Kunde</button>}
           />
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Kunde</th>
-                  <th>Kontakt</th>
-                  <th>Ort</th>
-                  {user?.role === 'admin' && <th>Berater</th>}
-                  <th>Status</th>
-                  <th>Zuletzt bearbeitet</th>
-                  <th>Aktionen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="customer-row"
-                    onClick={() => navigate(`/customers/${c.id}`)}
-                  >
-                    <td>
-                      <div className="flex items-center gap-s">
-                        <Avatar first={c.first_name} last={c.last_name} />
-                        <div>
-                          <div className="customer-name">{c.first_name} {c.last_name}</div>
-                          <div className="customer-sub">geb. {formatDate(c.birth_date)}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-sm">{c.email}</div>
-                      <div className="customer-sub">{c.phone}</div>
-                    </td>
-                    <td className="text-sm">{c.address.city || '—'}</td>
-                    {user?.role === 'admin' && <td className="text-sm">{c.consultant_name}</td>}
-                    <td><StatusBadge status={c.status} /></td>
-                    <td className="text-sm text-grey">{formatDate(c.last_edited)}</td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="table-actions">
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => navigate(`/customers/${c.id}`)}
-                          title="Öffnen"
-                        >
-                          📂
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => navigate(`/analysis/${c.id}`)}
-                          title="Analyse"
-                        >
-                          📊
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => navigate(`/consultation/${c.id}`)}
-                          title="Daten erfassen"
-                        >
-                          📝
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => navigate(`/documentation/${c.id}`)}
-                          title="Beratungsprotokoll"
-                        >
-                          📋
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => setShowDeleteConfirm(c.id)}
-                          title="Archivieren"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="customer-cards-grid">
+            {filtered.map((c) => (
+              <div
+                key={c.id}
+                className="customer-card"
+                onClick={() => navigate(`/customers/${c.id}`)}
+              >
+                {/* Avatar */}
+                <Avatar first={c.first_name} last={c.last_name} />
 
-            {/* Pagination */}
-            <div style={{ padding: 'var(--sp-m)', borderTop: '1px solid var(--gray-medium)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="text-sm text-grey">{filtered.length} Kunden angezeigt</span>
-              <div className="flex gap-s">
-                <button className="btn btn-secondary btn-sm" disabled>← Zurück</button>
-                <span className="btn btn-primary btn-sm">1</span>
-                <button className="btn btn-secondary btn-sm" disabled>Weiter →</button>
+                {/* Name + DOB */}
+                <div className="cc-identity">
+                  <div className="cc-name">{c.first_name} {c.last_name}</div>
+                  <div className="cc-dob">geb. {formatDate(c.birth_date)}</div>
+                </div>
+
+                {/* Contact */}
+                <div className="cc-contact">
+                  <div className="cc-email">{c.email}</div>
+                  <div className="cc-phone">{c.phone}</div>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <div className="cc-location">{c.address.city || '—'}</div>
+                  {user?.role === 'admin' && <div className="cc-consultant">{c.consultant_name}</div>}
+                </div>
+
+                {/* Status */}
+                <StatusBadge status={c.status} />
+
+                {/* Date + Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                  <div className="cc-date">{formatDate(c.last_edited)}</div>
+                  <div className="cc-actions" onClick={(e) => e.stopPropagation()}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/customers/${c.id}`)} title="Öffnen">📂</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/analysis/${c.id}`)} title="Analyse">📊</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/consultation/${c.id}`)} title="Daten">📝</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/documentation/${c.id}`)} title="Protokoll">📋</button>
+                    <button className="btn btn-danger btn-sm" onClick={() => setShowDeleteConfirm(c.id)} title="Archivieren">🗑</button>
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
