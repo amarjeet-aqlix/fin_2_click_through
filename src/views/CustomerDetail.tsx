@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AppLayout } from '../components/Layout';
 import { Tabs, Panel, Avatar, StatusBadge, Badge, Modal, Input, Textarea, Alert, LoadingCenter, EmptyState, SectionHeader } from '../components/UI';
 import { useApp } from '../context';
-import { CUSTOMERS, FINANCIAL_DATA, CONSULTATION_NOTES, DOCUMENTS, WISHES_OPTIONS, VIRTUAL_PARTNERS } from '../mock';
+import { CUSTOMERS, FINANCIAL_DATA, CONSULTATION_NOTES, DOCUMENTS, WISHES_OPTIONS, VIRTUAL_PARTNERS, CONSULTANTS } from '../mock';
 import type { Customer } from '../types';
 
 const TABS = [
@@ -71,6 +71,8 @@ export const CustomerDetail: React.FC = () => {
     </AppLayout>
   );
 
+  const advisor = CONSULTANTS.find((c) => c.id === customer.consultant_id) ?? null;
+
   const formatDate = (s: string) => s ? new Date(s).toLocaleDateString('de-DE') : '—';
   const formatCurrency = (n: number) => `${n.toLocaleString('de-DE')} €`;
 
@@ -94,7 +96,8 @@ export const CustomerDetail: React.FC = () => {
           </div>
           <div className="customer-meta">
             <span className="customer-meta-item">📧 {customer.email}</span>
-            <span className="customer-meta-item">📱 {customer.phone}</span>
+            <span className="customer-meta-item">📞 {customer.phone}</span>
+            {customer.mobile && <span className="customer-meta-item">📱 {customer.mobile}</span>}
             <span className="customer-meta-item">📍 {customer.address.city || '—'}</span>
             <span className="customer-meta-item">🎂 {formatDate(customer.birth_date)}</span>
             <span className="customer-meta-item">💼 {customer.consultant_name}</span>
@@ -193,6 +196,28 @@ export const CustomerDetail: React.FC = () => {
                   )}
                 </Panel>
               </div>
+
+              {/* Advisor info */}
+              {advisor && (
+                <Panel title="Zuständiger Berater">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-m)', flexWrap: 'wrap' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary-tint)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 'var(--fs-s)', flexShrink: 0 }}>
+                      {advisor.first_name[0]}{advisor.last_name[0]}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 'var(--fs-s)' }}>{advisor.first_name} {advisor.last_name}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px', marginTop: 4 }}>
+                        <span className="text-xs text-grey">📞 {advisor.phone}</span>
+                        {advisor.mobile && <span className="text-xs text-grey">📱 {advisor.mobile}</span>}
+                        <span className="text-xs" style={{ color: 'var(--primary)' }}>✉️ {advisor.email}</span>
+                        {advisor.address && (
+                          <span className="text-xs text-grey">📍 {advisor.address.street} {advisor.address.number}, {advisor.address.zip} {advisor.address.city}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Panel>
+              )}
 
               {/* Partner section */}
               <Panel title="Familie & Partner">
