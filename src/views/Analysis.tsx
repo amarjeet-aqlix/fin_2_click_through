@@ -7,6 +7,19 @@ import { CUSTOMERS, FINANCIAL_DATA, CUSTOMER_CONSULTATIONS } from '../mock';
 import type { Customer, FinancialData, Precaution } from '../types';
 import { FinancialHouse } from '../components/FinancialHouse';
 
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  TextField,
+  Typography,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText
+} from '@mui/material';
+
 // ── Customer picker shown when no ID in URL ──────────────────
 const CustomerPicker: React.FC = () => {
   const navigate = useNavigate();
@@ -16,43 +29,46 @@ const CustomerPicker: React.FC = () => {
   );
   return (
     <AppLayout title="Analyse">
-      <div style={{ maxWidth: 600, margin: '0 auto' }}>
-        <div className="card">
-          <div className="card-header"><h3>Kunden für Analyse auswählen</h3></div>
-          <div className="card-body">
-            <div className="search-input-wrap" style={{ marginBottom: 'var(--sp-m)' }}>
-              <span className="search-input-icon">🔍</span>
-              <input
-                className="search-input"
-                placeholder="Kunden suchen..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                autoFocus
-              />
-            </div>
+      <Box maxWidth={600} mx="auto">
+        <Card>
+          <CardHeader title="Kunden für Analyse auswählen" />
+
+          <CardContent>
+            <TextField
+              fullWidth
+              placeholder="Kunden suchen..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoFocus
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+
             {filtered.length === 0 ? (
-              <div className="empty-state"><div className="empty-state-text">Kein Kunde gefunden</div></div>
+              <Typography align="center">Kein Kunde gefunden</Typography>
             ) : (
-              filtered.map((c) => (
-                <div
-                  key={c.id}
-                  onClick={() => navigate(`/analysis/${c.id}`)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-m)', padding: '12px', borderRadius: 'var(--radius)', cursor: 'pointer', borderBottom: '1px solid var(--gray-medium)', transition: 'background 0.15s' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--gray-light)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = '')}
-                >
-                  <Avatar first={c.first_name} last={c.last_name} />
-                  <div style={{ flex: 1 }}>
-                    <div className="font-bold text-sm">{c.first_name} {c.last_name}</div>
-                    <div className="text-xs text-grey">{c.email} · {c.consultant_name}</div>
-                  </div>
-                  <span className="text-grey" style={{ fontSize: 18 }}>›</span>
-                </div>
-              ))
+              <List>
+                {filtered.map((c) => (
+                  <ListItem
+                    key={c.id}
+                    button
+                    onClick={() => navigate(`/analysis/${c.id}`)}
+                  >
+                    <ListItemAvatar>
+                      <Avatar first={c.first_name} last={c.last_name} />
+                    </ListItemAvatar>
+
+                    <ListItemText
+                      primary={`${c.first_name} ${c.last_name}`}
+                      secondary={`${c.email} · ${c.consultant_name}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
             )}
-          </div>
-        </div>
-      </div>
+          </CardContent>
+        </Card>
+      </Box>
     </AppLayout>
   );
 };
@@ -359,11 +375,11 @@ export const Analysis: React.FC = () => {
                 <Panel title="Ausgaben">
                   {fin && (
                     <>
-                      <Input label="Miete / Monat (€)" type="number" value={String(fin.expenses.rent)} onChange={() => {}} placeholder="0" />
-                      <Input label="Versicherungen / Monat (€)" type="number" value={String(fin.expenses.insurance)} onChange={() => {}} placeholder="0" />
-                      <Input label="Kredite / Monat (€)" type="number" value={String(fin.expenses.loans)} onChange={() => {}} placeholder="0" />
-                      <Input label="Lebenshaltung / Monat (€)" type="number" value={String(fin.expenses.living)} onChange={() => {}} placeholder="0" />
-                      <Input label="Sonstiges / Monat (€)" type="number" value={String(fin.expenses.other)} onChange={() => {}} placeholder="0" />
+                      <Input label="Miete / Monat (€)" type="number" value={String(fin.expenses.rent)} onChange={() => { }} placeholder="0" />
+                      <Input label="Versicherungen / Monat (€)" type="number" value={String(fin.expenses.insurance)} onChange={() => { }} placeholder="0" />
+                      <Input label="Kredite / Monat (€)" type="number" value={String(fin.expenses.loans)} onChange={() => { }} placeholder="0" />
+                      <Input label="Lebenshaltung / Monat (€)" type="number" value={String(fin.expenses.living)} onChange={() => { }} placeholder="0" />
+                      <Input label="Sonstiges / Monat (€)" type="number" value={String(fin.expenses.other)} onChange={() => { }} placeholder="0" />
                     </>
                   )}
                 </Panel>
@@ -395,12 +411,12 @@ export const Analysis: React.FC = () => {
                 <Input label="Monatlicher Bedarf im Ruhestand (€)" type="number" value={retirementData.monthly_need} onChange={(v) => setRetirementData((p) => ({ ...p, monthly_need: v }))} placeholder="3000" />
                 <Input label="Erwartete gesetzliche Rente (€)" type="number" value={retirementData.state_pension} onChange={(v) => setRetirementData((p) => ({ ...p, state_pension: v }))} hint="Aus dem Rentenbescheid" placeholder="1500" />
 
-                <Select label="Inflationsannahme" value="2" onChange={() => {}} options={[
+                <Select label="Inflationsannahme" value="2" onChange={() => { }} options={[
                   { value: '1', label: '1% p.a.' },
                   { value: '2', label: '2% p.a. (Standard)' },
                   { value: '3', label: '3% p.a.' },
                 ]} />
-                <Select label="Kapitalmarktrendite" value="5" onChange={() => {}} options={[
+                <Select label="Kapitalmarktrendite" value="5" onChange={() => { }} options={[
                   { value: '3', label: '3% (konservativ)' },
                   { value: '5', label: '5% (ausgewogen)' },
                   { value: '7', label: '7% (wachstumsorientiert)' },
@@ -484,9 +500,9 @@ export const Analysis: React.FC = () => {
 
               <Panel title="Simulationsrechner" action={<Badge type="info">Einfach</Badge>}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--sp-m)' }}>
-                  <Input label="Monatlicher Beitrag (€)" type="number" value="300" onChange={() => {}} />
-                  <Input label="Laufzeit (Jahre)" type="number" value="20" onChange={() => {}} />
-                  <Select label="Rendite p.a." value="5" onChange={() => {}} options={[{ value: '3', label: '3%' }, { value: '5', label: '5%' }, { value: '7', label: '7%' }]} />
+                  <Input label="Monatlicher Beitrag (€)" type="number" value="300" onChange={() => { }} />
+                  <Input label="Laufzeit (Jahre)" type="number" value="20" onChange={() => { }} />
+                  <Select label="Rendite p.a." value="5" onChange={() => { }} options={[{ value: '3', label: '3%' }, { value: '5', label: '5%' }, { value: '7', label: '7%' }]} />
                 </div>
                 <div style={{ background: 'var(--gray-light)', borderRadius: 'var(--radius)', padding: 'var(--sp-m)', marginTop: 'var(--sp-m)' }}>
                   <div className="flex justify-between text-sm">
@@ -569,16 +585,16 @@ export const Analysis: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-l)' }}>
                 <Panel title="Sparparameter">
-                  <Input label="Monatliche Sparrate (€)" type="number" value="500" onChange={() => {}} />
-                  <Input label="Einmalinvestition (€)" type="number" value="5000" onChange={() => {}} />
-                  <Input label="Anlagehorizont (Jahre)" type="number" value="25" onChange={() => {}} />
-                  <Select label="Anlagestrategie" value="balanced" onChange={() => {}} options={[
+                  <Input label="Monatliche Sparrate (€)" type="number" value="500" onChange={() => { }} />
+                  <Input label="Einmalinvestition (€)" type="number" value="5000" onChange={() => { }} />
+                  <Input label="Anlagehorizont (Jahre)" type="number" value="25" onChange={() => { }} />
+                  <Select label="Anlagestrategie" value="balanced" onChange={() => { }} options={[
                     { value: 'conservative', label: 'Konservativ (3% p.a.)' },
                     { value: 'balanced', label: 'Ausgewogen (5% p.a.)' },
                     { value: 'growth', label: 'Wachstum (7% p.a.)' },
                     { value: 'aggressive', label: 'Offensiv (9% p.a.)' },
                   ]} />
-                  <Select label="Inflationsbereinigung" value="yes" onChange={() => {}} options={[
+                  <Select label="Inflationsbereinigung" value="yes" onChange={() => { }} options={[
                     { value: 'yes', label: 'Ja (2% p.a.)' },
                     { value: 'no', label: 'Nein' },
                   ]} />
@@ -643,25 +659,25 @@ export const Analysis: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-l)' }}>
                 <Panel title="Aktuelle Wohnsituation">
-                  <Select label="Wohnsituation" value="miete" onChange={() => {}} options={[
+                  <Select label="Wohnsituation" value="miete" onChange={() => { }} options={[
                     { value: 'miete', label: 'Zur Miete' },
                     { value: 'eigentum', label: 'Eigenheim (abbezahlt)' },
                     { value: 'finanziert', label: 'Eigenheim (finanziert)' },
                     { value: 'eltern', label: 'Bei Eltern/Verwandten' },
                   ]} />
-                  <Input label="Aktuelle Kaltmiete (€/Monat)" type="number" value="1450" onChange={() => {}} />
-                  <Input label="Wohnfläche (m²)" type="number" value="95" onChange={() => {}} />
-                  <Input label="Wohnort / PLZ" value="München 80331" onChange={() => {}} />
+                  <Input label="Aktuelle Kaltmiete (€/Monat)" type="number" value="1450" onChange={() => { }} />
+                  <Input label="Wohnfläche (m²)" type="number" value="95" onChange={() => { }} />
+                  <Input label="Wohnort / PLZ" value="München 80331" onChange={() => { }} />
 
                   <div className="divider" />
                   <div className="font-bold text-sm" style={{ marginBottom: 'var(--sp-s)' }}>Immobilienwunsch</div>
-                  <Select label="Kaufabsicht" value="ja_5j" onChange={() => {}} options={[
+                  <Select label="Kaufabsicht" value="ja_5j" onChange={() => { }} options={[
                     { value: 'kein', label: 'Kein Immobilienwunsch' },
                     { value: 'ja_2j', label: 'Ja, in 2 Jahren' },
                     { value: 'ja_5j', label: 'Ja, in 5 Jahren' },
                     { value: 'ja_10j', label: 'Ja, in 10+ Jahren' },
                   ]} />
-                  <Input label="Zielprojekt / Budget (€)" type="number" value="550000" onChange={() => {}} />
+                  <Input label="Zielprojekt / Budget (€)" type="number" value="550000" onChange={() => { }} />
                 </Panel>
 
                 <div style={{ display: 'grid', gap: 'var(--sp-m)', alignContent: 'start' }}>
@@ -717,16 +733,16 @@ export const Analysis: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-l)' }}>
                 <Panel title="Situation der Hinterbliebenen">
-                  <Select label="Familienstand" value="verheiratet" onChange={() => {}} options={[
+                  <Select label="Familienstand" value="verheiratet" onChange={() => { }} options={[
                     { value: 'ledig', label: 'Ledig' },
                     { value: 'verheiratet', label: 'Verheiratet' },
                     { value: 'getrennt', label: 'Getrennt lebend' },
                     { value: 'verwitwet', label: 'Verwitwet' },
                   ]} />
-                  <Input label="Anzahl unterhaltsberechtigte Kinder" type="number" value="2" onChange={() => {}} />
-                  <Input label="Monatlicher Unterhaltsbedarf (€)" type="number" value="3200" onChange={() => {}} />
-                  <Input label="Restschuld / Verbindlichkeiten (€)" type="number" value="0" onChange={() => {}} />
-                  <Input label="Absicherungszeitraum (Jahre)" type="number" value="20" onChange={() => {}} />
+                  <Input label="Anzahl unterhaltsberechtigte Kinder" type="number" value="2" onChange={() => { }} />
+                  <Input label="Monatlicher Unterhaltsbedarf (€)" type="number" value="3200" onChange={() => { }} />
+                  <Input label="Restschuld / Verbindlichkeiten (€)" type="number" value="0" onChange={() => { }} />
+                  <Input label="Absicherungszeitraum (Jahre)" type="number" value="20" onChange={() => { }} />
                 </Panel>
 
                 <div style={{ display: 'grid', gap: 'var(--sp-m)', alignContent: 'start' }}>
@@ -776,9 +792,9 @@ export const Analysis: React.FC = () => {
                 </Panel>
 
                 <Panel title="Prämienrechner Risikoleben">
-                  <Input label="Versicherungssumme (€)" type="number" value="400000" onChange={() => {}} />
-                  <Input label="Laufzeit (Jahre)" type="number" value="20" onChange={() => {}} />
-                  <Select label="Raucherstatus" value="nein" onChange={() => {}} options={[
+                  <Input label="Versicherungssumme (€)" type="number" value="400000" onChange={() => { }} />
+                  <Input label="Laufzeit (Jahre)" type="number" value="20" onChange={() => { }} />
+                  <Select label="Raucherstatus" value="nein" onChange={() => { }} options={[
                     { value: 'nein', label: 'Nichtraucher' },
                     { value: 'ja', label: 'Raucher' },
                   ]} />
@@ -1132,8 +1148,8 @@ export const Analysis: React.FC = () => {
               </div>
 
               <Panel title="E-Mail versenden" action={<Badge type="info">Optional</Badge>}>
-                <Input label="Empfänger" type="email" value={customer.email} onChange={() => {}} />
-                <Select label="Anhänge" value="" onChange={() => {}} options={[{ value: '', label: 'Bericht auswählen...' }]} />
+                <Input label="Empfänger" type="email" value={customer.email} onChange={() => { }} />
+                <Select label="Anhänge" value="" onChange={() => { }} options={[{ value: '', label: 'Bericht auswählen...' }]} />
                 <button className="btn btn-primary btn-sm" onClick={() => addToast('success', 'E-Mail wurde erfolgreich versandt.')}>
                   ✉️ Versenden
                 </button>
