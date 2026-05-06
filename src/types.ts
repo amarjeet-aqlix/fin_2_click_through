@@ -16,6 +16,11 @@ export interface Consultant {
   last_name: string;
   email: string;
   phone: string;
+  mobile?: string;
+  phone_office?: string;
+  address?: { street: string; number?: string; zip: string; city: string };
+  profile_text?: string;
+  areas_of_expertise?: string[];
   company_id: string;
   rights: string[];
   status: 'active' | 'inactive';
@@ -29,6 +34,7 @@ export interface Customer {
   last_name: string;
   email: string;
   phone: string;
+  mobile?: string;
   birth_date: string;
   address: {
     street: string;

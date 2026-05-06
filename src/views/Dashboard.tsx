@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '../components/Layout';
-import { StatCard, Modal, Input, Select, Badge, StatusBadge, SectionHeader, EmptyState, LoadingCenter, Alert, Avatar } from '../components/UI';
+import { StatCard, Modal, Input, Select, Badge, StatusBadge, EmptyState, LoadingCenter, Alert, Avatar } from '../components/UI';
 import { useApp } from '../context';
 import { CUSTOMERS, CONSULTANTS, SUBSCRIPTION, PLANS } from '../mock';
 import type { Customer } from '../types';
 
-const RIGHTS_OPTIONS = [
-  { value: 'CAN_SEE_ALL_CLIENTS', label: 'Alle Kunden sehen' },
-  { value: 'CAN_SEE_CLIENTS_OF_LOWER_STAGES', label: 'Kunden untergeordneter Berater sehen' },
-  { value: 'CAN_MODIFY_COMPANY_SUGGESTION_REASONS', label: 'Vorschlagsbausteine bearbeiten' },
+const CUSTOMER_PERMISSIONS = [
+  { value: 'PORTAL_ACCESS',      label: 'Zugang zum Kundenportal',       desc: 'Kunde kann sich im Kundenportal einloggen und Daten einsehen.' },
+  { value: 'VIEW_ANALYSIS',      label: 'Analysen einsehen',             desc: 'Kunde kann seine Finanzanalyse und Auswertungen einsehen.' },
+  { value: 'DATA_INPUT',         label: 'Dateneingabe',                  desc: 'Kunde kann Finanzdaten und persönliche Angaben selbst eingeben.' },
+  { value: 'EDIT_PERSONAL_DATA', label: 'Persönliche Daten bearbeiten',  desc: 'Kunde darf Adresse, Telefon und weitere Stammdaten ändern.' },
+  { value: 'VIEW_DOCUMENTS',     label: 'Dokumente einsehen',            desc: 'Kunde kann hochgeladene und generierte Dokumente einsehen.' },
+  { value: 'UPLOAD_DOCUMENTS',   label: 'Dokumente hochladen',           desc: 'Kunde darf eigene Dokumente in den sicheren Bereich hochladen.' },
+  { value: 'DIGITAL_SIGNATURE',  label: 'Digitale Unterschrift',         desc: 'Kunde kann Dokumente digital unterzeichnen.' },
+  { value: 'VIEW_OFFERS',        label: 'Angebote einsehen',             desc: 'Kunde kann erstellte Angebote und Empfehlungen des Beraters sehen.' },
+  { value: 'RECEIVE_REPORTS',    label: 'Berichte per E-Mail erhalten',  desc: 'Kunde erhält regelmäßige Zusammenfassungen und Berichte per E-Mail.' },
+  { value: 'BOOK_APPOINTMENTS',  label: 'Termine buchen',                desc: 'Kunde kann Beratungstermine selbständig buchen und verwalten.' },
+  { value: 'SEND_MESSAGES',      label: 'Nachrichten senden',            desc: 'Kunde kann dem Berater direkt Nachrichten schicken.' },
 ];
 
 export const Dashboard: React.FC = () => {
@@ -24,6 +32,8 @@ export const Dashboard: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [rightsCustomerId, setRightsCustomerId] = useState<string | null>(null);
+  const [customerRights, setCustomerRights] = useState<Record<string, string[]>>({});
 
   // Add customer form state
   const [newCustomer, setNewCustomer] = useState({ first_name: '', last_name: '', email: '', phone: '', sex: 'm', birth_date: '' });
@@ -75,6 +85,17 @@ export const Dashboard: React.FC = () => {
     setNewCustomer({ first_name: '', last_name: '', email: '', phone: '', sex: 'm', birth_date: '' });
     addToast('success', `Kunde ${created.first_name} ${created.last_name} wurde erfolgreich angelegt.`);
   };
+
+  const handleToggleCustomerRight = (customerId: string, right: string) => {
+    setCustomerRights((prev) => {
+      const current = prev[customerId] ?? ['PORTAL_ACCESS'];
+      const has = current.includes(right);
+      return { ...prev, [customerId]: has ? current.filter((r) => r !== right) : [...current, right] };
+    });
+  };
+
+  const getCustomerRights = (customerId: string) =>
+    customerRights[customerId] ?? ['PORTAL_ACCESS'];
 
   const handleDeleteCustomer = async (id: string) => {
     await new Promise((r) => setTimeout(r, 500));
@@ -223,6 +244,7 @@ export const Dashboard: React.FC = () => {
                     <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/analysis/${c.id}`)} title="Analyse">📊</button>
                     <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/consultation/${c.id}`)} title="Daten">📝</button>
                     <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/documentation/${c.id}`)} title="Protokoll">📋</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setRightsCustomerId(c.id)} title="Rechte">🔑</button>
                     <button className="btn btn-danger btn-sm" onClick={() => setShowDeleteConfirm(c.id)} title="Archivieren">🗑</button>
                   </div>
                 </div>
@@ -372,6 +394,99 @@ export const Dashboard: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* Customer Rights Panel */}
+      {rightsCustomerId && (() => {
+        const target = customers.find((c) => c.id === rightsCustomerId);
+        if (!target) return null;
+        const rights = getCustomerRights(rightsCustomerId);
+        return (
+          <>
+            <div
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.25)', zIndex: 200 }}
+              onClick={() => setRightsCustomerId(null)}
+            />
+            <div style={{
+              position: 'fixed', top: 0, right: 0, bottom: 0, width: 440,
+              background: 'var(--surface)', borderLeft: '1px solid var(--border)',
+              zIndex: 201, display: 'flex', flexDirection: 'column',
+              boxShadow: '-4px 0 24px rgba(0,0,0,0.12)',
+              animation: 'slideInRight 0.28s ease',
+            }}>
+              {/* Header */}
+              <div style={{ padding: 'var(--sp-l)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 'var(--sp-m)' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary-tint)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 'var(--fs-s)', flexShrink: 0 }}>
+                  {target.first_name[0]}{target.last_name[0]}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 'var(--fs-s)' }}>{target.first_name} {target.last_name}</div>
+                  <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>{target.email}</div>
+                </div>
+                <button
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)', padding: 4 }}
+                  onClick={() => setRightsCustomerId(null)}
+                >✕</button>
+              </div>
+
+              {/* Permissions list */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--sp-l)' }}>
+                <div style={{ fontSize: 'var(--fs-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 'var(--sp-m)' }}>
+                  Berechtigungen
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {CUSTOMER_PERMISSIONS.map((p) => {
+                    const active = rights.includes(p.value);
+                    return (
+                      <div
+                        key={p.value}
+                        onClick={() => handleToggleCustomerRight(rightsCustomerId, p.value)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 'var(--sp-m)',
+                          padding: '12px var(--sp-m)', borderRadius: 'var(--radius)',
+                          cursor: 'pointer', userSelect: 'none',
+                          background: active ? 'var(--primary-tint)' : 'transparent',
+                          border: `1px solid ${active ? 'var(--primary)' : 'transparent'}`,
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {/* Toggle pill */}
+                        <div style={{
+                          width: 40, height: 22, borderRadius: 11, flexShrink: 0,
+                          background: active ? 'var(--primary)' : 'var(--gray-300)',
+                          position: 'relative', transition: 'background 0.2s',
+                        }}>
+                          <div style={{
+                            position: 'absolute', top: 3, left: active ? 21 : 3,
+                            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                          }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, fontSize: 'var(--fs-s)', color: active ? 'var(--primary)' : 'var(--text)' }}>
+                            {p.label}
+                          </div>
+                          <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.4 }}>
+                            {p.desc}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div style={{ padding: 'var(--sp-l)', borderTop: '1px solid var(--border)', display: 'flex', gap: 8 }}>
+                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setRightsCustomerId(null)}>Abbrechen</button>
+                <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => {
+                  addToast('success', `Rechte für ${target.first_name} ${target.last_name} gespeichert.`);
+                  setRightsCustomerId(null);
+                }}>💾 Speichern</button>
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Delete confirm */}
       {showDeleteConfirm && (

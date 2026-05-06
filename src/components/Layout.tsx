@@ -4,32 +4,39 @@ import { useApp } from '../context';
 import { ToastContainer } from './UI';
 
 const NAV_ITEMS_CONSULTANT = [
-  { id: 'dashboard', label: 'Übersicht', icon: '🏠', path: '/dashboard' },
-  { id: 'customers', label: 'Kunden', icon: '👥', path: '/customers' },
-  { id: 'analysis', label: 'Analyse', icon: '📊', path: '/analysis' },
-  { id: 'settings', label: 'Einstellungen', icon: '⚙️', path: '/settings' },
+  { id: 'profile',      label: 'Profil',         icon: '👤', path: '/settings?tab=profile' },
+  { id: 'customers',   label: 'Kunden',          icon: '👥', path: '/customers' },
+  { id: 'consultants', label: 'Berater',          icon: '🤝', path: '/settings?tab=consultants' },
+  { id: 'analysis',    label: 'Analyse',          icon: '📊', path: '/analysis' },
+  { id: 'advice',      label: 'Beratung',         icon: '💬', path: '/settings?tab=consultation' },
+  { id: 'legal',       label: 'Rechtliches',      icon: '⚖️', path: '/legal' },
+  { id: 'settings',    label: 'Einstellungen',    icon: '⚙️', path: '/settings' },
 ];
 
 const NAV_ITEMS_ADMIN = [
-  { id: 'dashboard', label: 'Übersicht', icon: '🏠', path: '/dashboard' },
-  { id: 'customers', label: 'Kunden', icon: '👥', path: '/customers' },
-  { id: 'analysis', label: 'Analyse', icon: '📊', path: '/analysis' },
-  { id: 'billing', label: 'Abrechnung', icon: '💳', path: '/settings?tab=billing' },
-  { id: 'settings', label: 'Einstellungen', icon: '⚙️', path: '/settings' },
+  { id: 'profile',      label: 'Profil',         icon: '👤', path: '/settings?tab=profile' },
+  { id: 'customers',   label: 'Kunden',          icon: '👥', path: '/customers' },
+  { id: 'consultants', label: 'Berater',          icon: '🤝', path: '/settings?tab=consultants' },
+  { id: 'analysis',    label: 'Analyse',          icon: '📊', path: '/analysis' },
+  { id: 'advice',      label: 'Beratung',         icon: '💬', path: '/settings?tab=consultation' },
+  { id: 'legal',       label: 'Rechtliches',      icon: '⚖️', path: '/legal' },
+  { id: 'settings',    label: 'Einstellungen',    icon: '⚙️', path: '/settings' },
 ];
 
 const NAV_ITEMS_CUSTOMER = [
-  { id: 'portal', label: 'Mein Bereich', icon: '🏠', path: '/portal' },
-  { id: 'documents', label: 'Dokumente', icon: '📄', path: '/portal?tab=documents' },
-  { id: 'goals', label: 'Ziele', icon: '🎯', path: '/portal?tab=goals' },
+  { id: 'profile',    label: 'Profil',        icon: '👤', path: '/portal?tab=account' },
+  { id: 'portal',    label: 'Mein Bereich',   icon: '🏠', path: '/portal' },
+  { id: 'documents', label: 'Dokumente',      icon: '📄', path: '/portal?tab=documents' },
+  { id: 'goals',     label: 'Ziele',          icon: '🎯', path: '/portal?tab=goals' },
+  { id: 'legal',     label: 'Rechtliches',    icon: '⚖️', path: '/legal' },
+  { id: 'settings',  label: 'Einstellungen',  icon: '⚙️', path: '/settings' },
 ];
 
-export const AppLayout: React.FC<{ children: React.ReactNode; title?: string }> = ({ children, title }) => {
-  const { user, logout } = useApp();
+export const AppLayout: React.FC<{ children: React.ReactNode; title?: string; extraNav?: React.ReactNode }> = ({ children, title, extraNav }) => {
+  const { user } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const navItems = user?.role === 'customer'
     ? NAV_ITEMS_CUSTOMER
@@ -37,13 +44,20 @@ export const AppLayout: React.FC<{ children: React.ReactNode; title?: string }> 
       ? NAV_ITEMS_ADMIN
       : NAV_ITEMS_CONSULTANT;
 
-  const isActive = (path: string) => location.pathname === path.split('?')[0];
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-    setDropdownOpen(false);
+  const isActive = (path: string) => {
+    const [pathname, queryStr] = path.split('?');
+    // nested routes like /customers/cust1
+    if (!queryStr && location.pathname.startsWith(pathname + '/')) return true;
+    if (location.pathname !== pathname) return false;
+    if (!queryStr) {
+      // /settings (no tab) → only active when URL has no tab param
+      const currentTab = new URLSearchParams(location.search).get('tab');
+      return !currentTab;
+    }
+    const tabParam = new URLSearchParams(queryStr).get('tab');
+    return new URLSearchParams(location.search).get('tab') === tabParam;
   };
+
 
   const roleLabel = user?.role === 'admin' ? 'Administrator' : user?.role === 'consultant' ? 'Berater' : 'Kunde';
   const initials = `${user?.first_name?.[0] ?? ''}${user?.last_name?.[0] ?? ''}`.toUpperCase();
@@ -70,6 +84,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode; title?: string }> 
               <span className="nav-item-label">{item.label}</span>
             </div>
           ))}
+          {extraNav}
         </nav>
 
         <div className="sidebar-user">
@@ -95,51 +110,9 @@ export const AppLayout: React.FC<{ children: React.ReactNode; title?: string }> 
           {title && <span className="topnav-title">{title}</span>}
           <div className="topnav-spacer" />
 
-          <div className="topnav-actions">
-            <div className="user-dropdown">
-              <div
-                className="topnav-avatar"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                title="Benutzerprofil"
-              >
-                {initials}
-              </div>
-
-              {dropdownOpen && (
-                <div className="user-dropdown-menu">
-                  <div className="user-dropdown-header">
-                    <div className="user-dropdown-name">{user?.first_name} {user?.last_name}</div>
-                    <div className="user-dropdown-email">{user?.email}</div>
-                  </div>
-
-                  <div className="user-dropdown-item" onClick={() => { navigate('/settings'); setDropdownOpen(false); }}>
-                    ⚙️ Einstellungen
-                  </div>
-
-                  {user?.role !== 'customer' && (
-                    <div className="user-dropdown-item" onClick={() => { navigate('/settings?tab=profile'); setDropdownOpen(false); }}>
-                      👤 Mein Profil
-                    </div>
-                  )}
-
-                  {user?.role === 'customer' && (
-                    <div className="user-dropdown-item" onClick={() => { navigate('/portal'); setDropdownOpen(false); }}>
-                      🏠 Mein Bereich
-                    </div>
-                  )}
-
-                  <hr className="divider" style={{ margin: 0 }} />
-
-                  <div className="user-dropdown-item danger" onClick={handleLogout}>
-                    🚪 Abmelden
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
 
-        <div className="page-content" onClick={() => setDropdownOpen(false)}>
+        <div className="page-content">
           {children}
         </div>
       </div>
